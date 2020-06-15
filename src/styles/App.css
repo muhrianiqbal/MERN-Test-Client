@@ -3,8 +3,12 @@
   height: 100vh;
 }
 
-.Login, .Form {
+.Login {
   overflow: hidden;
+}
+
+.Form {
+  overflow-x: hidden;
 }
 
 .Navbar {

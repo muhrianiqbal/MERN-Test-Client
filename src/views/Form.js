@@ -1,19 +1,44 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory, useLocation } from 'react-router-dom';
 //Ant design
-import { Form, Input, InputNumber, Button, Rate } from 'antd';
+import { Form, Input, InputNumber, Button } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 //Components
 import Navbar from '../components/Navbar';
+//Actions
+import { create_a_movie, update_a_movie } from '../store/actions';
 
 export default () => {
-  const onFinish = values => {
-    console.log(values);
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const location = useLocation();
+  const [form] = Form.useForm();
+  const { isLogin } = useSelector(state => state);
+  
+  useEffect(() => {
+    if (!isLogin) {
+      history.push('/login');
+    } else if (location.state) {
+      const { name, poster, popularity, description, tags } = location.state;
+      form.setFieldsValue({ name, poster, popularity: parseFloat(popularity.$numberDecimal), description, tags });
+    }
+  }, [location.state, form, history, isLogin]);
+
+  const onFinish = (values) => {
+    dispatch(create_a_movie(values));
+    history.push('/');
   };
+
+  function onUpdate(values) {
+    dispatch(update_a_movie(location.state._id, values));
+    history.push('/');
+  }
 
   return (
     <div className="Form">
       <Navbar />
-      <Form {...layout} name="nest-messages" onFinish={onFinish} style={{margin: "5% 20%"}}>
+      <Form {...layout} name="nest-messages" form={form} onFinish={location.state ? onUpdate : onFinish} style={{margin: "5% 20%"}} onReset={onUpdate}>
       <Form.Item
         name="name"
         label="Name"
@@ -46,12 +71,13 @@ export default () => {
             type: 'number',
             min: 0,
             max: 10,
-            required: true
+            required: true,
+            message: 'Please input Movie popularity'
           },
         ]}
       >
         <InputNumber min={0} max={10} step={0.1} />
-        <Rate allowHalf defaultValue={0} style={{marginLeft: "2%"}} />
+        {/* <Rate allowHalf value={5} style={{marginLeft: "2%"}} /> */}
       </Form.Item>
       <Form.Item 
         name="description" 
@@ -65,7 +91,12 @@ export default () => {
       >
         <Input.TextArea />
       </Form.Item>
-      <Form.Item name="tags" label="Tags">
+      <Form.Item name="tags" label="Tags" rules={[
+          {
+            required: true,
+            message: 'Please input Movie tags'
+          },
+        ]}>
         {/* <Input /> */}
         <Form.List name="tags">
           {(fields, { add, remove }) => {
@@ -118,9 +149,9 @@ export default () => {
         </Form.List>
       </Form.Item>
       <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
+          <Button type="primary" htmlType="submit">
+            {location.state ? 'Update' : 'Create'}
+          </Button>
       </Form.Item>
     </Form>
     </div>

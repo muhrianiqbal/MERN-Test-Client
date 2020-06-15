@@ -1,27 +1,34 @@
 import React from 'react';
-import { Form, Input, Button, Checkbox } from 'antd';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+//Components
+import Navbar from '../components/Navbar';
+//Actions
+import { login } from '../store/actions';
+//Ant design
+import { Form, Input, Button } from 'antd';
 
 export default () => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+
   const onFinish = values => {
     console.log('Success:', values);
+    const { email, password } = values;
+    dispatch(login({ email, password }));
+    history.push('/');
   };
 
   const onFinishFailed = errorInfo => {
     console.log('Failed:', errorInfo);
   };
 
-  const onReset = () => {
-    // form.resetFields();
-  };
-
   return (
     <div className="Login">
+      <Navbar />
       <Form
         {...layout}
         name="basic"
-        initialValues={{
-          remember: true,
-        }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         style={{margin: "30vh 30vw"}}
@@ -32,12 +39,12 @@ export default () => {
           rules={[
             {
               required: true,
-              message: 'Please input your email!',
+              message: 'Please enter the correct email!',
               type: "email"
             },
           ]}
         >
-          <Input />
+          <Input placeholder="example@mail.com" />
         </Form.Item>
 
         <Form.Item
@@ -53,16 +60,9 @@ export default () => {
           <Input.Password />
         </Form.Item>
 
-        <Form.Item {...tailLayout} name="remember" valuePropName="checked">
-          <Checkbox>Remember me</Checkbox>
-        </Form.Item>
-
         <Form.Item {...tailLayout}>
           <Button type="primary" htmlType="submit">
             Submit
-          </Button>
-          <Button htmlType="button" onClick={onReset} style={{marginLeft: "5%"}}>
-            Cancel
           </Button>
         </Form.Item>
       </Form>
